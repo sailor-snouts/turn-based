@@ -1,16 +1,22 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class AnyKeyLoadScene : MonoBehaviour
 {
     private InputAction anyKeyAction = null;
+    private TransitionController transitionController = null;
     [SerializeField] private string nextScene = "";
-    [SerializeField] private TransitionController transitionController = null;
-    
+
     private void Awake()
     {
         this.anyKeyAction = new InputAction(binding: "/*/<button>");
         this.anyKeyAction.performed += onAnyKey;
+    }
+
+    private void Start()
+    {
+        this.transitionController = TransitionController.GetInstance();
     }
 
     private void OnEnable()

@@ -21,6 +21,11 @@ public class TransitionController : Transition
         this.anim.Play("Visible");
     }
 
+    public static TransitionController GetInstance()
+    {
+        return TransitionController.instance;
+    }
+
     public void Load(string scene)
     {
         this.loadingScene = scene;
