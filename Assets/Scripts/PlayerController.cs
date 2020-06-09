@@ -34,15 +34,22 @@ public class PlayerController : MonoBehaviour
     private void RegisterInput()
     {
         this.actions.Player.Primary.performed += Primary;
+        this.actions.Player.Exit.performed += Exit;
         this.actions.Player.Enable();
     }
     
     private void UnregisterInput()
     {
         this.actions.Player.Primary.performed -= Primary;
+        this.actions.Player.Exit.performed -= Exit;
         this.actions.Player.Disable();
     }
 
+    private void Exit(InputAction.CallbackContext context)
+    {
+        TransitionController.GetInstance().Load("title");
+    }
+    
     private void Primary(InputAction.CallbackContext context)
     {
         if (!this.isCurrentPlayer) return;

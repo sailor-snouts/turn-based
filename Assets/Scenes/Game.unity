@@ -1438,6 +1438,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Transition
       objectReference: {fileID: 0}
+    - target: {fileID: 7868685304106982252, guid: a6da148fcaf36764e9a89962856dc409,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7868685304106982262, guid: a6da148fcaf36764e9a89962856dc409,
         type: 3}
       propertyPath: m_LocalPosition.x
