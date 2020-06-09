@@ -354,7 +354,6 @@
           <e p="GameManager.cs" t="Include" />
           <e p="PlayerActions.cs" t="Include" />
           <e p="PlayerController.cs" t="Include" />
-          <e p="Selector.cs" t="Include" />
           <e p="Unit.cs" t="Include" />
         </e>
       </e>

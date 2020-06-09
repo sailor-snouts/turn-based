@@ -1,124 +1,181 @@
-﻿using System.Collections;
+﻿using Pathfinding;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public class Unit : MonoBehaviour
 {
-    [Header("Health")]
-    [SerializeField] private float maxHealth = 10f;
-    [SerializeField] private float currentHealth = 10f;
-    [SerializeField] private Image healthFill = null;
-    [Header("Attack")]
-    [SerializeField] private float attack = 1f;
-    [SerializeField] private float accuracy = 0.8f;
-    [SerializeField] private float range = 1f;
-    [Header("Movement")]
-    [SerializeField] private float movement = 5f;
-    [SerializeField] private float speed = 1f;
-    [SerializeField] private bool used = false;
-    [Header("Other")]
-    [SerializeField] private GameObject selected = null;
-
-    private bool isAlive = true;
+    private PlayerController playerID = null;
+    private Rigidbody2D rb = null;
     private SpriteRenderer sprite = null;
+    private GameManager gm = null;
+
+    [Header("Selection")]
+    [SerializeField] private GameObject select = null;
+    [SerializeField] private Color color = Color.white;
+    [SerializeField] private Color usedColor = Color.gray;
+
+    [Header("Health")] 
+    [SerializeField] private Image healthBar = null;
+    [SerializeField] private float maxHealth = 10f;
+    private float currentHealth = 10f;
+    
+    [Header("Attack")] 
+    [SerializeField] private float attack = 10;
+    private bool hasAttacked = false;
+    
+    [Header("Movement")] 
+    [SerializeField] private float speed = 2f;
+    [SerializeField] private float distance = 5f;
+    private bool hasMoved = false;
+    private int currentWaypoint = 0;
+    private Path path = null;
+    private Seeker seeker = null;
+    
 
     private void Start()
     {
-        this.UpdateGui();
-        this.currentHealth = this.maxHealth;
+        this.seeker = GetComponent<Seeker>();
+        this.rb = GetComponent<Rigidbody2D>();
         this.sprite = GetComponent<SpriteRenderer>();
+        this.gm = GameManager.GetInstance();
+        this.UpdateGraphs();
+        if(this.hasMoved && this.hasAttacked)
+            this.Rest();
+        else this.Refresh();
     }
 
-    public void Refresh()
+    public void SetPlayer(PlayerController playerController)
     {
-        this.used = false;
+        this.playerID = playerController;
+    }
+
+    public void SetColors(Color color, Color usedColor)
+    {
+        this.color = color;
+        this.usedColor = usedColor;
     }
     
-    public bool isSelectable()
+    public bool IsSelectable(PlayerController playerController)
     {
-        return !this.used;
+        return !this.hasMoved && this.IsPlayer(playerController);
     }
 
-    public void Wait()
+    public bool IsPlayer(PlayerController playerController)
     {
-        Debug.Log("waiting");
-        this.used = true;
-        this.sprite.color = new Color(0.5f,0.5f,0.5f,1);
-    }
-    
-    public bool canMoveTo(Vector2 position)
-    {
-        if (this.used) return false;
-        Vector2 distance = (Vector2) this.transform.position - position;
-        return distance.sqrMagnitude <= Mathf.Pow(this.movement, 2);
+        return playerController == this.playerID;
     }
 
-    public void MoveTo(Vector2 target)
+    public bool HasMoved()
     {
-        this.used = true;
-        StartCoroutine(Move());
-        
-        IEnumerator Move()
-        {
-            while ((Vector2) transform.position != target)
-            {
-                transform.position = Vector2.MoveTowards(transform.transform.position, target, this.speed * Time.deltaTime);
-                yield return null;
-            }
-            
-            this.ToggleSelect(false);
-        }
+        return this.hasMoved;
     }
 
-    public bool canAttackPosition(Vector2 position)
+    public bool HasAttacked()
     {
-        Vector2 distance = (Vector2) this.transform.position - position;
-        return distance.sqrMagnitude <= Mathf.Pow(this.range, 2);
+        return this.hasAttacked;
     }
 
-    public void Attack(Unit unit)
+    public void Select()
     {
-        if (Random.Range(0f, 100f) > this.accuracy * 100f)
-        {
-            this.Missed();
-            return;
-        }
-
-        unit.Damage(this.attack);
+        this.select.SetActive(true);
     }
 
-    private void Missed()
+    public void Deselect()
     {
-        
+        this.select.SetActive(false);
+    }
+
+    public void Die()
+    {
+        this.Destroy();
+    }
+
+    public void Destroy()
+    {
+        GameManager.GetInstance().RemoveUnit(this.playerID, this);
+        Destroy(this.gameObject);
+    }
+
+    public void MoveTo(Vector3 target)
+    {
+        seeker.StartPath(this.transform.position, target, OnFinishPathCalculation);
+    }
+
+    private void UpdateHealth()
+    {
+        this.healthBar.fillAmount = Mathf.Clamp01(this.currentHealth / this.maxHealth);
     }
 
     public void Damage(float dmg)
     {
-        this.currentHealth = Mathf.Clamp(this.currentHealth - dmg, 0f, this.maxHealth);
-        this.UpdateGui();
+        this.currentHealth = Mathf.Clamp(this.currentHealth - dmg, 0, this.maxHealth);
+        this.UpdateHealth();
         if (this.currentHealth <= 0)
             this.Die();
     }
-
-    private void UpdateGui()
+    
+    public void Attack(Unit unit)
     {
-        this.healthFill.fillAmount = Mathf.Clamp01(this.currentHealth / this.maxHealth);
+        unit.Damage(this.attack);
+        this.hasAttacked = true;
+        this.hasMoved = true;
+        this.Deselect();
+        this.Rest();
     }
 
-    private void Die()
+    public void Refresh()
     {
-        this.isAlive = false;
-        this.Destroy();
+        this.hasMoved = false;
+        this.hasAttacked = false;
+        this.sprite.color = this.color;
+    }
+    
+    public void Rest()
+    {
+        this.hasMoved = true;
+        this.hasAttacked = true;
+        this.sprite.color = this.usedColor;
     }
 
-    private void Destroy()
+    private void OnFinishPathCalculation(Path p)
     {
-        Destroy(this.gameObject);
+        if (p.error)
+        {
+            Debug.LogError(p.error.ToString());
+            return;
+        }
+
+        this.hasMoved = true;
+        this.path = p;
+        this.currentWaypoint = 0;
+    }
+    
+    private void FixedUpdate()
+    {
+        if (this.path == null)
+        {
+            return;
+        }
+
+        if (this.currentWaypoint >= this.path.vectorPath.Count)
+        {
+            this.UpdateGraphs();
+            this.rb.velocity = Vector2.zero;
+            this.path = null;
+            return;
+        }
+
+        Vector2 direction = (path.vectorPath[this.currentWaypoint] - this.transform.position).normalized;
+        this.rb.velocity = direction * this.speed;
+
+        if (Vector2.Distance(this.transform.position , path.vectorPath[this.currentWaypoint]) < 0.1f)
+        {
+            this.currentWaypoint++;
+        }
     }
 
-    public void ToggleSelect(bool selected)
+    private void UpdateGraphs()
     {
-        this.selected.SetActive(selected);
+        AstarPath.active.UpdateGraphs (new GraphUpdateObject(this.GetComponent<SpriteRenderer>().bounds));
     }
 }
