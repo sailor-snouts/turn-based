@@ -50,12 +50,9 @@ public class PlayerController : MonoBehaviour
         Vector3 selectedPosition = new Vector3(Mathf.RoundToInt(mousePosition.x), Mathf.RoundToInt(mousePosition.y), 0);
         Unit unit = this.units.Find(x => x.isSelectable() && x.transform.position == selectedPosition);
 
-        Debug.Log("Selection");
-        Debug.Log(selectedPosition);
         // selecting our unit
         if (unit != null)
         {
-            Debug.Log("Selecting unit");
             this.SelectUnit(unit);
             return;
         }
@@ -68,11 +65,22 @@ public class PlayerController : MonoBehaviour
         if (this.selected.canMoveTo(selectedPosition))
         {
             this.selected.MoveTo(selectedPosition);
-            this.selected = null;
             return;
         }
         
         // attack?
+        if (this.selected.canAttackPosition(selectedPosition))
+        {
+            Unit enemy = this.enemyUnits.Find(x => x.transform.position == selectedPosition);
+            if (enemy)
+                this.selected.Attack(enemy);
+        }
+
+        this.selected.Wait();
+        this.selected = null;
+
+        if (!this.units.Find(x => x.isSelectable()))
+            GameManager.GetInstance().GetOtherPlayerController(this).BeginTurn();
     }
 
     private void SelectUnit(Unit unit)

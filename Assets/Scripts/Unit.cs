@@ -21,11 +21,13 @@ public class Unit : MonoBehaviour
     [SerializeField] private GameObject selected = null;
 
     private bool isAlive = true;
+    private SpriteRenderer sprite = null;
 
     private void Start()
     {
         this.UpdateGui();
         this.currentHealth = this.maxHealth;
+        this.sprite = GetComponent<SpriteRenderer>();
     }
 
     public void Refresh()
@@ -38,8 +40,16 @@ public class Unit : MonoBehaviour
         return !this.used;
     }
 
+    public void Wait()
+    {
+        Debug.Log("waiting");
+        this.used = true;
+        this.sprite.color = new Color(0.5f,0.5f,0.5f,1);
+    }
+    
     public bool canMoveTo(Vector2 position)
     {
+        if (this.used) return false;
         Vector2 distance = (Vector2) this.transform.position - position;
         return distance.sqrMagnitude <= Mathf.Pow(this.movement, 2);
     }
