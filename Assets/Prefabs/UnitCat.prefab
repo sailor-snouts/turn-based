@@ -429,6 +429,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   select: {fileID: 3099999974576919987}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  usedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   healthBar: {fileID: 7886376438750742833}
   maxHealth: 10
   attack: 10
@@ -458,7 +460,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.77, y: 0.755}
+  m_Size: {x: 0.6, y: 0.6}
   m_EdgeRadius: 0
 --- !u!50 &4780350761819230042
 Rigidbody2D:
@@ -495,7 +497,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   drawGizmos: 1
-  detailedGizmos: 0
+  detailedGizmos: 1
   startEndModifier:
     addPoints: 0
     exactStartPoint: 0

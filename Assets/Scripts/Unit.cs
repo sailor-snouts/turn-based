@@ -1,4 +1,6 @@
-﻿using Pathfinding;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Pathfinding;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,11 +23,13 @@ public class Unit : MonoBehaviour
     
     [Header("Attack")] 
     [SerializeField] private float attack = 10;
+    [SerializeField] private float range = 1;
     private bool hasAttacked = false;
+    private Unit AttackTarget = null;
     
     [Header("Movement")] 
     [SerializeField] private float speed = 2f;
-    [SerializeField] private float distance = 5f;
+    [SerializeField] private float distance = 4f;
     private bool hasMoved = false;
     private int currentWaypoint = 0;
     private Path path = null;
@@ -78,11 +82,15 @@ public class Unit : MonoBehaviour
     public void Select()
     {
         this.select.SetActive(true);
+        this.gameObject.layer = LayerMask.NameToLayer("SelectedUnit");
+        AstarPath.active.UpdateGraphs (new GraphUpdateObject(this.GetComponent<SpriteRenderer>().bounds));
     }
 
     public void Deselect()
     {
         this.select.SetActive(false);
+        this.gameObject.layer = LayerMask.NameToLayer("Unit");
+        AstarPath.active.UpdateGraphs (new GraphUpdateObject(this.GetComponent<SpriteRenderer>().bounds));
     }
 
     public void Die()
@@ -116,11 +124,8 @@ public class Unit : MonoBehaviour
     
     public void Attack(Unit unit)
     {
-        unit.Damage(this.attack);
-        this.hasAttacked = true;
-        this.hasMoved = true;
-        this.Deselect();
-        this.Rest();
+        this.AttackTarget = unit;
+        seeker.StartPath(this.transform.position, unit.transform.position, OnFinishAttackPathCalculation);
     }
 
     public void Refresh()
@@ -145,9 +150,32 @@ public class Unit : MonoBehaviour
             return;
         }
 
-        this.hasMoved = true;
-        this.path = p;
-        this.currentWaypoint = 0;
+        Debug.Log(p.GetTotalLength());
+        if (p.GetTotalLength() <= this.distance)
+        {
+            this.hasMoved = true;
+            this.path = p;
+            this.currentWaypoint = 0;
+        }
+    }
+    
+    private void OnFinishAttackPathCalculation(Path p)
+    {
+        if (p.error)
+        {
+            Debug.LogError(p.error.ToString());
+            return;
+        }
+
+        Debug.Log(p.GetTotalLength());
+        if (p.GetTotalLength() <= this.range)
+        {
+            this.AttackTarget.Damage(this.attack);
+            this.hasAttacked = true;
+            this.hasMoved = true;
+            this.Deselect();
+            this.Rest();
+        }
     }
     
     private void FixedUpdate()
@@ -176,6 +204,6 @@ public class Unit : MonoBehaviour
 
     private void UpdateGraphs()
     {
-        AstarPath.active.UpdateGraphs (new GraphUpdateObject(this.GetComponent<SpriteRenderer>().bounds));
+        AstarPath.active.Scan();
     }
 }

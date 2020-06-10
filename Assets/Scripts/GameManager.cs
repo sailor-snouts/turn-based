@@ -128,8 +128,12 @@ public class GameManager : MonoBehaviour
             Unit unit = collision.GetComponent<Unit>();
             if (unit.IsSelectable(this.currentPlayer))
             {
-                if(this.selectedUnit && this.selectedUnit != unit)
+                if (this.selectedUnit && this.selectedUnit != unit)
+                {
                     this.selectedUnit.Deselect();
+                    if(this.selectedUnit.HasMoved())
+                        this.selectedUnit.Rest();
+                }
                 else if (this.selectedUnit && this.selectedUnit == unit) 
                     this.selectedUnit.Rest();
                 
