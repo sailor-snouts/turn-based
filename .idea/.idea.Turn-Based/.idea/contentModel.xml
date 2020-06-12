@@ -354,7 +354,18 @@
           <e p="GameManager.cs" t="Include" />
           <e p="PlayerActions.cs" t="Include" />
           <e p="PlayerController.cs" t="Include" />
-          <e p="Unit.cs" t="Include" />
+          <e p="Time" t="Include">
+            <e p="TimeAudioSwap.cs" t="Include" />
+            <e p="TimeChamber.cs" t="Include" />
+            <e p="TimeObjectSwap.cs" t="Include" />
+            <e p="TimeSwap.cs" t="Include" />
+            <e p="UnitSwap.cs" t="Include" />
+          </e>
+          <e p="Unit" t="Include">
+            <e p="Element.cs" t="Include" />
+            <e p="Health.cs" t="Include" />
+            <e p="Unit.cs" t="Include" />
+          </e>
         </e>
       </e>
       <e p="AstarPathfindingProject.csproj" t="IncludeRecursive" />

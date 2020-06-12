@@ -79,7 +79,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 914985116456121354, guid: e9847cef145ff8440a816bf8dbb35e8b,
     type: 2}
-  m_audioClip: {fileID: 8300000, guid: 11389c82e599c084f8a808d383148ba3, type: 3}
+  m_audioClip: {fileID: 8300000, guid: d0604ed3605f0cd498a13118230d3ac1, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -291,7 +291,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nextScene: Title
-  transitionController: {fileID: 0}
 --- !u!1 &3221214173258060993
 GameObject:
   m_ObjectHideFlags: 0
