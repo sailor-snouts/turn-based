@@ -7,6 +7,9 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager instance = null;
     private Actions actions = null;
+
+    [Header("Special Objects")] [SerializeField]
+    private TimeChamber timeChamber = null;
     
     [Header("Select")]
     [SerializeField] private GameObject cursor = null;
@@ -20,7 +23,7 @@ public class GameManager : MonoBehaviour
     private PlayerController currentPlayer = null;
     private List<Unit> player1Units = new List<Unit>();
     private List<Unit> player2Units = new List<Unit>();
-    
+
     public static GameManager GetInstance()
     {
         return GameManager.instance;
@@ -128,8 +131,12 @@ public class GameManager : MonoBehaviour
             Unit unit = collision.GetComponent<Unit>();
             if (unit.IsSelectable(this.currentPlayer))
             {
-                if(this.selectedUnit && this.selectedUnit != unit)
+                if (this.selectedUnit && this.selectedUnit != unit)
+                {
                     this.selectedUnit.Deselect();
+                    if(this.selectedUnit.HasMoved())
+                        this.selectedUnit.Rest();
+                }
                 else if (this.selectedUnit && this.selectedUnit == unit) 
                     this.selectedUnit.Rest();
                 
@@ -175,15 +182,29 @@ public class GameManager : MonoBehaviour
     private void AutoTurnEnd()
     {
         if (!this.GetPlayerUnits(this.currentPlayer).Find(x => !x.HasMoved()))
-        {
-            this.currentPlayer.EndTurn();
-            this.currentPlayer = this.GetOtherPlayer(this.currentPlayer);
-            this.currentPlayer.BeginTurn();
-        }
+            this.EndTurn();
+    }
+
+    public void EndTurn()
+    {
+        this.currentPlayer.EndTurn();
+        this.currentPlayer = this.GetOtherPlayer(this.currentPlayer);
+        this.currentPlayer.BeginTurn();
+        this.timeChamber.BeginTurn();
     }
     
     private void Exit(InputAction.CallbackContext context)
     {
         TransitionController.GetInstance().Load("title");
+    }
+
+    public bool IsPlayer1(PlayerController player)
+    {
+        return this.player1 == player;
+    }
+
+    public bool isPlayer2(PlayerController player)
+    {
+        return this.player2 == player;
     }
 }
